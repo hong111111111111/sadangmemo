@@ -1,48 +1,129 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>사당 홀리스타 플로잉 계좌</title>
-    <style>
-        body {
-            background-color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 60px 20px;
-        }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        p {
-            font-size: 18px;
-            margin: 8px 0;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sadang Holy Star - 한 줄 묵상</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      min-height: 100vh;
+      color: #222;
+    }
+
+    header {
+      margin-top: 30px;
+    }
+
+    header img {
+      width: 250px;
+    }
+
+    h2 {
+      color: #228b22;
+      margin-top: 20px;
+    }
+
+    form {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #4CAF50;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    li {
+      background-color: #e0f2e9;
+      margin: 8px 0;
+      padding: 10px;
+      border-left: 6px solid #4CAF50;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-    <h1>사당 홀리스타 플로잉 계좌</h1>
-    <p><strong>은행:</strong> 하나은행</p>
-    <p><strong>계좌번호:</strong> <span id="account">228-910022-13204</span></p>
-    <p><strong>예금주:</strong> 온누리교회(사당홀리스타)</p>
-    <button onclick="copyAccount()">📋 계좌번호 복사하기</button>
+  <header>
+    <img src="./bb91e5ec-d010-4892-a2ce-f971087440d7.png" alt="Sadang Holy Star Logo">
+  </header>
+  <h2>하나만 명사하세요 :)</h2>
 
-    <script>
-        function copyAccount() {
-            const accountText = document.getElementById("account").innerText;
-            navigator.clipboard.writeText(accountText).then(function() {
-                alert("✅ 계좌번호가 복사되었습니다: " + accountText);
-            }, function(err) {
-                alert("❌ 복사에 실패했습니다.");
-            });
-        }
-    </script>
+  <form id="memo-form">
+    <input type="text" id="memo-input" placeholder="오늘 말씀 묵상, 한 줄로 나눠요" required />
+    <button type="submit">등록</button>
+  </form>
+
+  <ul id="memo-list"></ul>
+
+  <script>
+    const form = document.getElementById('memo-form');
+    const input = document.getElementById('memo-input');
+    const list = document.getElementById('memo-list');
+
+    const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    function loadMemos() {
+      const stored = localStorage.getItem(todayKey);
+      if (stored) {
+        const memos = JSON.parse(stored);
+        memos.forEach(msg => addMemoToDOM(msg));
+      }
+    }
+
+    function addMemoToDOM(text) {
+      const li = document.createElement('li');
+      li.textContent = text;
+      list.appendChild(li);
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const value = input.value.trim();
+      if (!value) return;
+
+      addMemoToDOM(value);
+
+      let memos = JSON.parse(localStorage.getItem(todayKey)) || [];
+      memos.push(value);
+      localStorage.setItem(todayKey, JSON.stringify(memos));
+
+      input.value = '';
+    });
+
+    // 초기 불러오기
+    loadMemos();
+  </script>
 </body>
 </html>

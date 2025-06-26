@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sadang Holy Star - 한 줄 묵상</title>
   <style>
     body {
@@ -41,15 +41,24 @@
       border-radius: 8px;
       outline: none;
     }
-    button {
+    .button-group {
+      display: flex;
+      gap: 10px;
       margin-top: 10px;
+    }
+    button {
       padding: 8px 16px;
-      background-color: #4CAF50;
       color: white;
       font-size: 16px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+    }
+    button.green {
+      background-color: #4CAF50;
+    }
+    button.pink {
+      background-color: #e75480;
     }
     ul {
       list-style: none;
@@ -61,8 +70,14 @@
       background-color: #e0f2e9;
       margin: 8px 0;
       padding: 10px;
-      border-left: 6px solid #4CAF50;
+      border-left: 6px solid #ccc;
       border-radius: 4px;
+    }
+    li.green {
+      border-left: 6px solid #4CAF50;
+    }
+    li.pink {
+      border-left: 6px solid #e75480;
     }
   </style>
 </head>
@@ -70,11 +85,14 @@
   <header>
     <img src="./sadang-logo.png" alt="Sadang Holy Star Logo">
   </header>
-  <h2>묵상한 내용을 나눠 보세요 :)</h2>
+  <h2>묵상한 내용을 나누고, 기도제목도 적어보세요 :)</h2>
 
   <form id="memo-form">
-    <input type="text" id="memo-input" placeholder="오늘 말씀 묵상, 한 줄로 나눠요" required />
-    <button type="submit">등록</button>
+    <input type="text" id="memo-input" maxlength="200" placeholder="한 줄 묵상이나 기도제목을 적어보세요" required />
+    <div class="button-group">
+      <button type="submit" data-type="묵상" class="green">묵상</button>
+      <button type="submit" data-type="기도제목" class="pink">기도제목</button>
+    </div>
   </form>
 
   <ul id="memo-list"></ul>
@@ -93,28 +111,41 @@
     const input = document.getElementById('memo-input');
     const list = document.getElementById('memo-list');
 
+    let currentType = "묵상"; // 기본값
+
+    const buttons = document.querySelectorAll('form button');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentType = btn.dataset.type;
+        submitMemo();
+      });
+    });
+
+    async function submitMemo() {
+      const text = input.value.trim();
+      if (!text) return;
+      await addDoc(collection(db, "memos"), {
+        message: text,
+        type: currentType,
+        timestamp: new Date()
+      });
+      input.value = '';
+      await loadMemos();
+    }
+
     async function loadMemos() {
       list.innerHTML = '';
       const q = query(collection(db, "memos"), orderBy("timestamp", "desc"));
       const snapshot = await getDocs(q);
       snapshot.forEach(docSnap => {
+        const data = docSnap.data();
         const li = document.createElement('li');
-        li.textContent = docSnap.data().message;
-        list.appendChild(li);  // 최신 글 위에
+        li.textContent = data.message;
+        li.classList.add(data.type === "기도제목" ? 'pink' : 'green');
+        list.appendChild(li);
       });
     }
-
-    memoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-      await addDoc(collection(db, "memos"), {
-        message: text,
-        timestamp: new Date()
-      });
-      input.value = '';
-      await loadMemos();
-    });
 
     loadMemos();
   </script>

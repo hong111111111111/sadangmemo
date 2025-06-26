@@ -95,12 +95,12 @@
 
     async function loadMemos() {
       list.innerHTML = '';
-      const q = query(collection(db, "memos"), orderBy("timestamp", "asc"));
+      const q = query(collection(db, "memos"), orderBy("timestamp", "desc"));
       const snapshot = await getDocs(q);
       snapshot.forEach(docSnap => {
         const li = document.createElement('li');
         li.textContent = docSnap.data().message;
-        list.prepend(li);  // 최신 글 위에
+        list.appendChild(li);  // 최신 글 위에
       });
     }
 

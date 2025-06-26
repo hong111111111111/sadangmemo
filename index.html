@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sadang Holy Star - 한 줄 묵상</title>
+  <title>Sadang Holy Star - 묵상 & 기도</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -67,17 +67,18 @@
       max-width: 500px;
     }
     li {
-      background-color: #e0f2e9;
       margin: 8px 0;
       padding: 10px;
       border-left: 6px solid #ccc;
       border-radius: 4px;
+      background-color: white;
     }
     li.green {
       border-left: 6px solid #4CAF50;
     }
     li.pink {
       border-left: 6px solid #e75480;
+      background-color: #ffe6ec;
     }
   </style>
 </head>
@@ -111,7 +112,7 @@
     const input = document.getElementById('memo-input');
     const list = document.getElementById('memo-list');
 
-    let currentType = "묵상"; // 기본값
+    let currentType = "묵상"; // 기본 선택
 
     const buttons = document.querySelectorAll('form button');
     buttons.forEach(btn => {
@@ -138,8 +139,20 @@
       list.innerHTML = '';
       const q = query(collection(db, "memos"), orderBy("timestamp", "desc"));
       const snapshot = await getDocs(q);
+
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
+        const timestamp = data.timestamp?.toDate?.();
+
+        if (!timestamp) return;
+
+        if (data.type === "묵상" && timestamp < oneDayAgo) return;
+        if (data.type === "기도제목" && timestamp < sevenDaysAgo) return;
+
         const li = document.createElement('li');
         li.textContent = data.message;
         li.classList.add(data.type === "기도제목" ? 'pink' : 'green');

@@ -117,7 +117,7 @@
       snapshot.forEach(docSnap => {
         const li = document.createElement('li');
         li.textContent = docSnap.data().message;
-        list.appendChild(li);
+        list.prepend(li);
       });
     }
 

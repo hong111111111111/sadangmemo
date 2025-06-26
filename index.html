@@ -76,7 +76,7 @@
 </head>
 <body>
   <header>
-    <img src="sadang-logo.png" alt="Sadang Holy Star Logo">
+    <img src="./sadang-logo.png" alt="Sadang Holy Star Logo">
   </header>
   <h2>묵상한 내용을 나눠 보세요 :)</h2>
 
@@ -87,42 +87,52 @@
 
   <ul id="memo-list"></ul>
 
-  <script>
-    const form = document.getElementById('memo-form');
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJRrW7tyGi6y9JmBx6psT9CbNgjrQD9Tc",
+      authDomain: "sadang-memo-9db7a.firebaseapp.com",
+      projectId: "sadang-memo-9db7a",
+      storageBucket: "sadang-memo-9db7a.firebasestorage.app",
+      messagingSenderId: "637822482569",
+      appId: "1:637822482569:web:92ad3175232faf7a2e2e58",
+      measurementId: "G-H1LT2MR9CP"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const memoForm = document.getElementById('memo-form');
     const input = document.getElementById('memo-input');
     const list = document.getElementById('memo-list');
 
-    const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
-    function loadMemos() {
-      const stored = localStorage.getItem(todayKey);
-      if (stored) {
-        const memos = JSON.parse(stored);
-        memos.forEach(msg => addMemoToDOM(msg));
-      }
+    async function loadMemos() {
+      list.innerHTML = '';
+      const q = query(collection(db, "memos"), orderBy("timestamp", "asc"));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(docSnap => {
+        const li = document.createElement('li');
+        li.textContent = docSnap.data().message;
+        list.appendChild(li);
+      });
     }
 
-    function addMemoToDOM(text) {
-      const li = document.createElement('li');
-      li.textContent = text;
-      list.appendChild(li);
-    }
-
-    form.addEventListener('submit', (e) => {
+    memoForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const value = input.value.trim();
-      if (!value) return;
-
-      addMemoToDOM(value);
-
-      let memos = JSON.parse(localStorage.getItem(todayKey)) || [];
-      memos.push(value);
-      localStorage.setItem(todayKey, JSON.stringify(memos));
-
+      const text = input.value.trim();
+      if (!text) return;
+      await addDoc(collection(db, "memos"), {
+        message: text,
+        timestamp: new Date()
+      });
       input.value = '';
+      await loadMemos();
     });
 
-    // 초기 불러오기
     loadMemos();
   </script>
 </body>

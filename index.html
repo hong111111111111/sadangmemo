@@ -72,14 +72,24 @@
       border-left: 6px solid #ccc;
       border-radius: 4px;
       background-color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     li.green {
-  border-left: 6px solid #4CAF50;
-  background-color: #e6f5ea; /* ✅ 이 줄 추가 또는 수정 */
-}
+      border-left: 6px solid #4CAF50;
+      background-color: #e6f5ea;
+    }
     li.pink {
       border-left: 6px solid #e75480;
       background-color: #ffe6ec;
+    }
+    .prayer-button {
+      font-size: 14px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      margin-left: 10px;
     }
   </style>
 </head>
@@ -102,7 +112,14 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
-      getFirestore, collection, addDoc, getDocs, query, orderBy
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      query,
+      orderBy,
+      updateDoc,
+      doc
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { firebaseConfig } from './config.js';
 
@@ -130,7 +147,8 @@
       await addDoc(collection(db, "memos"), {
         message: text,
         type: currentType,
-        timestamp: new Date()
+        timestamp: new Date(),
+        prayerCount: 0 // 🙏 초기값
       });
       input.value = '';
       await loadMemos();
@@ -150,13 +168,29 @@
         const timestamp = data.timestamp?.toDate?.();
 
         if (!timestamp) return;
-
         if (data.type === "묵상" && timestamp < oneDayAgo) return;
         if (data.type === "기도제목" && timestamp < sevenDaysAgo) return;
 
         const li = document.createElement('li');
-        li.textContent = data.message;
         li.classList.add(data.type === "기도제목" ? 'pink' : 'green');
+
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = data.message;
+
+        const prayerBtn = document.createElement('button');
+        prayerBtn.className = 'prayer-button';
+        prayerBtn.textContent = `🙏 ${data.prayerCount || 0}`;
+
+        prayerBtn.addEventListener('click', async () => {
+          const docRef = doc(db, "memos", docSnap.id);
+          await updateDoc(docRef, {
+            prayerCount: (data.prayerCount || 0) + 1
+          });
+          await loadMemos();
+        });
+
+        li.appendChild(messageSpan);
+        li.appendChild(prayerBtn);
         list.appendChild(li);
       });
     }

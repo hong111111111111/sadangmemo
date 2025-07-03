@@ -90,7 +90,19 @@
       border: none;
       cursor: pointer;
       margin-left: 10px;
-      prayerBtn.style.color = '#999';
+      color: #999;
+    }
+    .background-button-wrapper {
+      margin: 30px 0;
+    }
+    .background-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -109,6 +121,11 @@
   </form>
 
   <ul id="memo-list"></ul>
+
+  <!-- 오늘의 배경 버튼 -->
+  <div class="background-button-wrapper">
+    <button class="background-button" onclick="window.open('wall.png', '_blank')">오늘의 배경 보기</button>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
